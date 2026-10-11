@@ -3,103 +3,76 @@ from DAO.Conexion import Conexion
 host = "localhost"
 user = "userempresa"
 password = "Pimienta12."
-db = "empresa"
+db = "ecotech"
 
 # Creación
 def agregar(p):
     con = None
     try:
         con = Conexion(host, user, password, db)
-
-        sql = "INSERT INTO PROYECTO (nombre, descripcion, fecha_inicio) VALUES (%s, %s, %s)"
+        sql = """INSERT INTO proyecto (nombre, descripcion, fecha_inicio) 
+                 VALUES (%s, %s, %s)"""
         valores = (p.nombre, p.descripcion, p.fecha_inicio)
 
         cursor = con.ejecuta_query(sql, valores)
         if cursor is None:
-            raise RuntimeError("No se pudo ejecutar el INSERT de proyecto; revisa el error de MySQL mostrado arriba.")
+            raise RuntimeError("Error al ejecutar el INSERT de proyecto.")
         con.commit()
-
         return True
-
     except Exception as ex:
         print(f"Error al agregar proyecto: {ex}")
-        if con:
-            con.rollback()
+        if con: con.rollback()
         return False
-
     finally:
-        if con:
-            con.desconectar()
+        if con: con.desconectar()
 
-
-# Edición
 def editar(p):
     con = None
     try:
         con = Conexion(host, user, password, db)
-
-        sql = "UPDATE PROYECTO SET nombre=%s, descripcion=%s, fecha_inicio=%s WHERE USER_ID=%s"
-        proy_id = getattr(p, 'user_id', getattr(p, 'id', None))
+        sql = """UPDATE proyecto 
+                 SET nombre=%s, descripcion=%s, fecha_inicio=%s 
+                 WHERE proyecto_id=%s"""
+        proy_id = getattr(p, 'proyecto_id', getattr(p, 'id', None))
         valores = (p.nombre, p.descripcion, p.fecha_inicio, proy_id)
 
         cursor = con.ejecuta_query(sql, valores)
         if cursor is None:
-            raise RuntimeError("No se pudo ejecutar el UPDATE del proyecto; revisa el error de MySQL mostrado arriba.")
+            raise RuntimeError("Error al ejecutar el UPDATE de proyecto.")
         con.commit()
-
         return True
-
     except Exception as ex:
         print(f"Error al modificar proyecto: {ex}")
-        if con:
-            con.rollback()
+        if con: con.rollback()
         return False
-
     finally:
-        if con:
-            con.desconectar()
+        if con: con.desconectar()
 
-
-# Eliminación
-def eliminar(id):
+def eliminar(id_proyecto):
     con = None
     try:
         con = Conexion(host, user, password, db)
-
-        sql = "DELETE FROM PROYECTO WHERE USER_ID=%s"
-
-        con.ejecuta_query(sql, (id,))
+        sql = "DELETE FROM proyecto WHERE proyecto_id=%s"
+        con.ejecuta_query(sql, (id_proyecto,))
         con.commit()
-
         return True
-
     except Exception:
-        if con:
-            con.rollback()
+        if con: con.rollback()
         return False
-
     finally:
-        if con:
-            con.desconectar()
+        if con: con.desconectar()
 
-
-# Mostrar todos
 def mostrartodos():
     con = None
     try:
         con = Conexion(host, user, password, db)
-
-        sql = "SELECT USER_ID, nombre, descripcion, fecha_inicio FROM PROYECTO"
-
+        sql = "SELECT proyecto_id, nombre, descripcion, fecha_inicio FROM proyecto"
         cursor = con.ejecuta_query(sql)
         return cursor.fetchall() if cursor else []
-
     except Exception:
         return []
-
     finally:
-        if con:
-            con.desconectar()
+        if con: con.desconectar()
 
 
 # Consulta particular
