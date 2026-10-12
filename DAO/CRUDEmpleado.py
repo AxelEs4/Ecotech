@@ -5,23 +5,19 @@ user = "userempresa"
 password = "Pimienta12."
 db = "ecotech"
 
-# Creación
 def agregar(e):
     con = None
     try:
         con = Conexion(host, user, password, db)
-        # No se envía empleado_id porque es AUTO_INCREMENT
         sql = """INSERT INTO empleado (run, nombre, direccion, telefono, correo, fecha_inicio, salario, departamento_id) 
                  VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
         valores = (e.run, e.nombre, e.direccion, e.telefono, e.correo, e.fecha_inicio, e.salario, e.departamento_id)
-
         cursor = con.ejecuta_query(sql, valores)
-        if cursor is None:
-            raise RuntimeError("Error al ejecutar el INSERT de empleado.")
+        if cursor is None: raise RuntimeError("Error en INSERT.")
         con.commit()
         return True
     except Exception as ex:
-        print(f"Error al agregar empleado: {ex}")
+        print(f"Error: {ex}")
         if con: con.rollback()
         return False
     finally:
@@ -31,31 +27,27 @@ def editar(e):
     con = None
     try:
         con = Conexion(host, user, password, db)
+        # Editamos buscando por el RUN (que es único)
         sql = """UPDATE empleado 
-                 SET run=%s, nombre=%s, direccion=%s, telefono=%s, correo=%s, fecha_inicio=%s, salario=%s, departamento_id=%s 
-                 WHERE empleado_id=%s"""
-        
-        emp_id = getattr(e, 'empleado_id', getattr(e, 'id', None))
-        valores = (e.run, e.nombre, e.direccion, e.telefono, e.correo, e.fecha_inicio, e.salario, e.departamento_id, emp_id)
-
+                 SET nombre=%s, direccion=%s, telefono=%s, correo=%s, fecha_inicio=%s, salario=%s, departamento_id=%s 
+                 WHERE run=%s"""
+        valores = (e.nombre, e.direccion, e.telefono, e.correo, e.fecha_inicio, e.salario, e.departamento_id, e.run)
         cursor = con.ejecuta_query(sql, valores)
-        if cursor is None:
-            raise RuntimeError("Error al ejecutar el UPDATE de empleado.")
+        if cursor is None: raise RuntimeError("Error en UPDATE.")
         con.commit()
         return True
     except Exception as ex:
-        print(f"Error al modificar empleado: {ex}")
+        print(f"Error: {ex}")
         if con: con.rollback()
         return False
     finally:
         if con: con.desconectar()
 
-def eliminar(id_empleado):
+def eliminar(run):
     con = None
     try:
         con = Conexion(host, user, password, db)
-        sql = "DELETE FROM empleado WHERE empleado_id=%s"
-        con.ejecuta_query(sql, (id_empleado,))
+        con.ejecuta_query("DELETE FROM empleado WHERE run=%s", (run,))
         con.commit()
         return True
     except Exception:
@@ -68,8 +60,8 @@ def mostrartodos():
     con = None
     try:
         con = Conexion(host, user, password, db)
-        sql = """SELECT e.empleado_id, e.run, e.nombre, e.direccion, e.telefono, e.correo, e.fecha_inicio, e.salario, d.nombre 
-                 FROM empleado e LEFT JOIN departamento d ON e.departamento_id = d.departamento_id"""
+        # Retorna el empleado_id interno al final por si se necesita
+        sql = "SELECT run, nombre, direccion, telefono, correo, fecha_inicio, salario, departamento_id, empleado_id FROM empleado"
         cursor = con.ejecuta_query(sql)
         return cursor.fetchall() if cursor else []
     except Exception:
@@ -77,24 +69,14 @@ def mostrartodos():
     finally:
         if con: con.desconectar()
 
-
-# Consulta particular
-def consultarparticular(id):
+def consultarparticular(run):
     con = None
     try:
         con = Conexion(host, user, password, db)
-
-        sql = """SELECT USER_ID, run, nombre, direccion, telefono, correo, fecha_inicio, salario, departamento_id 
-                 FROM EMPLEADO WHERE USER_ID = %s"""
-        cursor = con.ejecuta_query(sql, (id,))
-
+        sql = "SELECT run, nombre, direccion, telefono, correo, fecha_inicio, salario, departamento_id, empleado_id FROM empleado WHERE run = %s"
+        cursor = con.ejecuta_query(sql, (run,))
         return cursor.fetchone() if cursor else None
-
     except Exception:
         return None
-
     finally:
-        if con:
-            con.desconectar()
-
-
+        if con: con.desconectar()

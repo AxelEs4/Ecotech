@@ -1,4 +1,4 @@
-import os, pymysql
+import os
 
 import DAO.CRUDAsignacion_emp as CRUDAsignacion_emp
 import DAO.CRUDDepartamento as CRUDDepartamento
@@ -6,14 +6,18 @@ import DAO.CRUDEmpleado as CRUDEmpleado
 import DAO.CRUDProyecto as CRUDProyecto
 import DAO.CRUDTiempo as CRUDTiempo
 import DAO.CRUDValidaciones as CRUDValidaciones
+
 from DTO.Empleado import Empleado
 from DTO.Departamento import Departamento
 from DTO.Proyecto import Proyecto
 from DTO.RegistroTiempo import RegistroTiempo
-from DTO.Asignacion import Asignacion
+from DTO.Asignacion import AsignacionEmp
 
 
-#Mostrar el menú principal
+# ==========================================
+# MENÚS PRINCIPALES Y SUBMENÚS
+# ==========================================
+
 def mostrar_menu():
     os.system('cls')
     print("========================================")
@@ -28,6 +32,7 @@ def mostrar_menu():
     print("7. Salir")
     print("========================================")
 
+
 def menu_empleados():
     while True:
         print("\n--- GESTIÓN DE EMPLEADOS ---")
@@ -38,18 +43,12 @@ def menu_empleados():
         print("5. Volver al menú principal")
         opcion = input("Ingrese opción: ").strip()
 
-        if opcion == "1":
-            ingresardatos()
-        elif opcion == "2":
-            mostrardatos()
-        elif opcion == "3":
-            modificardatos()
-        elif opcion == "4":
-            eliminardatos()
-        elif opcion == "5":
-            return
-        else:
-            print("Opción no válida.")
+        if opcion == "1": ingresardatos()
+        elif opcion == "2": mostrardatos()
+        elif opcion == "3": modificardatos()
+        elif opcion == "4": eliminardatos()
+        elif opcion == "5": return
+        else: print("Opción no válida.")
 
 def menu_departamentos():
     while True:
@@ -143,7 +142,7 @@ def main():
 
 
 # ==========================================
-# CRUD EMPLEADOS 
+# CRUD EMPLEADOS (PK: run)
 # ==========================================
 
 def ingresardatos():
@@ -153,173 +152,187 @@ def ingresardatos():
     print("======================")
 
     run = input("Ingrese RUN: ")
+    if CRUDValidaciones.existe_empleado(run):
+        print("Error: Ya existe un empleado registrado con este RUN.")
+        input("Presione Enter para continuar...")
+        return
+
     nombre = input("Ingrese Nombre: ")
     direccion = input("Ingrese Dirección: ")
     telefono = input("Ingrese Teléfono: ")
     correo = input("Ingrese Correo: ")
     fecha_inicio = input("Ingrese Fecha de Inicio (YYYY-MM-DD): ")
-    try:
-        salario = float(input("Ingrese Salario: "))
-        departamento_id = int(input("Ingrese ID del Departamento: "))
-    except ValueError:
-        print("El salario debe ser numérico y el ID del departamento debe ser un entero.")
+    
+    if not CRUDValidaciones.validar_fecha(fecha_inicio):
+        print("Error: El formato de fecha no es válido.")
+        input("Presione Enter para continuar...")
         return
 
-    empleado = Empleado(
-        None, departamento_id, run, nombre, direccion, telefono, correo, fecha_inicio, salario
-    )
+    try:
+        salario = float(input("Ingrese Salario: "))
+        departamento_id = int(input("Ingrese ID del Departamento (numérico): "))
+    except ValueError:
+        print("Error: El salario debe ser numérico y el ID del departamento debe ser un entero.")
+        input("Presione Enter para continuar...")
+        return
+
+    # Constructor INACAP: (run, nombre, direccion, telefono, correo, fecha_inicio, salario, departamento_id)
+    empleado = Empleado(run, nombre, direccion, telefono, correo, fecha_inicio, salario, departamento_id)
 
     if CRUDEmpleado.agregar(empleado):
         print("Empleado ingresado correctamente.")
     else:
         print("No se pudo ingresar el empleado.")
+    input("Presione Enter para continuar...")
 
 def mostrardatos():
     empleados = CRUDEmpleado.mostrartodos()
     if not empleados:
         print("No hay empleados para mostrar.")
+        input("Presione Enter para continuar...")
         return
 
-    print("\nID | RUN | Nombre | Dirección | Teléfono | Correo | Fecha inicio | Salario | Departamento")
-    print("-" * 110)
+    print("\nRUN | Nombre | Dirección | Teléfono | Correo | Fecha inicio | Salario | Depto ID")
+    print("-" * 100)
     for emp in empleados:
-        print(f"{emp[0]} | {emp[1]} | {emp[2]} | {emp[3]} | {emp[4]} | {emp[5]} | {emp[6]} | {emp[7]} | {emp[8]}")
+        print(f"{emp[0]} | {emp[1]} | {emp[2]} | {emp[3]} | {emp[4]} | {emp[5]} | {emp[6]} | {emp[7]}")
+    input("Presione Enter para continuar...")
 
 def modificardatos():
-    try:
-        empleado_id = int(input("ID del empleado a modificar: "))
-    except ValueError:
-        print("El ID debe ser un número entero.")
-        return
-
-    actual = CRUDEmpleado.consultarparticular(empleado_id)
+    run_actual = input("Ingrese el RUN del empleado a modificar: ").strip()
+    
+    actual = CRUDEmpleado.consultarparticular(run_actual)
     if actual is None:
-        print("No se encontró un empleado con ese ID.")
+        print("No se encontró un empleado con ese RUN.")
+        input("Presione Enter para continuar...")
         return
 
-    print("Deje un campo vacío para conservar su valor actual.")
-    run = input(f"RUN [{actual[1]}]: ").strip() or actual[1]
-    nombre = input(f"Nombre [{actual[2]}]: ").strip() or actual[2]
-    direccion = input(f"Dirección [{actual[3]}]: ").strip() or actual[3]
-    telefono = input(f"Teléfono [{actual[4]}]: ").strip() or actual[4]
-    correo = input(f"Correo [{actual[5]}]: ").strip() or actual[5]
-    fecha_inicio = input(f"Fecha de inicio [{actual[6]}]: ").strip() or actual[6]
+    print("Deje un campo vacío y presione Enter para conservar su valor actual.")
+    nombre = input(f"Nombre [{actual[1]}]: ").strip() or actual[1]
+    direccion = input(f"Dirección [{actual[2]}]: ").strip() or actual[2]
+    telefono = input(f"Teléfono [{actual[3]}]: ").strip() or actual[3]
+    correo = input(f"Correo [{actual[4]}]: ").strip() or actual[4]
+    fecha_inicio = input(f"Fecha de inicio [{actual[5]}]: ").strip() or actual[5]
 
     try:
-        sal_txt = input(f"Salario [{actual[7]}]: ").strip()
-        salario = float(sal_txt) if sal_txt else float(actual[7])
-        dep_txt = input(f"ID del departamento [{actual[8]}]: ").strip()
-        departamento_id = int(dep_txt) if dep_txt else int(actual[8])
+        sal_txt = input(f"Salario [{actual[6]}]: ").strip()
+        salario = float(sal_txt) if sal_txt else float(actual[6])
+        dep_txt = input(f"ID del departamento [{actual[7]}]: ").strip()
+        departamento_id = int(dep_txt) if dep_txt else int(actual[7])
     except ValueError:
-        print("El salario debe ser numérico y el ID del departamento debe ser un entero.")
+        print("Error: El salario debe ser numérico y el ID del departamento debe ser un entero.")
+        input("Presione Enter para continuar...")
         return
 
-    empleado = Empleado(
-        actual[0], departamento_id, run, nombre, direccion, telefono, correo, fecha_inicio, salario
-    )
+    # Constructor INACAP
+    empleado = Empleado(run_actual, nombre, direccion, telefono, correo, fecha_inicio, salario, departamento_id)
 
     if CRUDEmpleado.editar(empleado):
         print("Empleado modificado correctamente.")
     else:
         print("No se pudo modificar el empleado.")
+    input("Presione Enter para continuar...")
 
 def eliminardatos():
-    try:
-        empleado_id = int(input("ID del empleado a eliminar: "))
-    except ValueError:
-        print("El ID debe ser un número entero.")
-        return
+    run = input("Ingrese el RUN del empleado a eliminar: ").strip()
 
-    empleado = CRUDEmpleado.consultarparticular(empleado_id)
+    empleado = CRUDEmpleado.consultarparticular(run)
     if empleado is None:
-        print("No se encontró un empleado con ese ID.")
+        print("No se encontró un empleado con ese RUN.")
+        input("Presione Enter para continuar...")
         return
 
-    confirmacion = input(f"¿Eliminar a {empleado[2]}? (s/n): ").strip().lower()
+    confirmacion = input(f"¿Eliminar a {empleado[1]}? (s/n): ").strip().lower()
     if confirmacion == "s":
-        if CRUDEmpleado.eliminar(empleado_id):
+        if CRUDEmpleado.eliminar(run):
             print("Empleado eliminado correctamente.")
         else:
             print("No se pudo eliminar el empleado.")
+    input("Presione Enter para continuar...")
 
 
 # ==========================================
-# CRUD DEPARTAMENTOS
+# CRUD DEPARTAMENTOS (PK: nombre)
 # ==========================================
 
 def ingresar_depto():
     os.system('cls')
     print("\n--- INGRESAR DEPARTAMENTO ---")
     nombre = input("Ingrese Nombre del Departamento: ")
+    if CRUDValidaciones.existe_departamento(nombre):
+        print("Error: Ya existe un departamento con ese nombre.")
+        input("Presione Enter para continuar...")
+        return
+
     descripcion = input("Ingrese Descripción: ")
     try:
         gerente_id = input("Ingrese ID del Empleado Gerente (o deje en blanco): ").strip()
-        gerente_emp_id = int(gerente_id) if gerente_id else None
+        gerente_emp_id = int(gerente_id) if gerente_id else 0
     except ValueError:
         print("El ID del gerente debe ser un número entero.")
+        input("Presione Enter para continuar...")
         return
 
-    # Se pasa None como ID inicial ya que es autoincremental
-    d = Departamento(None, nombre, descripcion, gerente_emp_id)
+    # Constructor INACAP: (nombre, gerente_empleado_id, descripcion)
+    d = Departamento(nombre, gerente_emp_id, descripcion)
     
     if CRUDDepartamento.agregar(d):
         print("Departamento ingresado correctamente.")
     else:
         print("Error al ingresar departamento.")
+    input("Presione Enter para continuar...")
 
 def mostrar_deptos():
     deptos = CRUDDepartamento.mostrartodos()
     if not deptos:
         print("No hay departamentos para mostrar.")
+        input("Presione Enter para continuar...")
         return
-    print("\nID | Nombre | Descripción | ID Gerente | Nombre Gerente")
+    print("\nNombre | Descripción | ID Gerente | User ID Interno")
     print("-" * 60)
     for d in deptos:
-        print(f"{d[0]} | {d[1]} | {d[2]} | {d[3]} | {d[4]}")
+        print(f"{d[0]} | {d[1]} | {d[2]} | {d[3]}")
+    input("Presione Enter para continuar...")
 
 def modificar_depto():
-    try:
-        depto_id = int(input("ID del departamento a modificar: "))
-    except ValueError:
-        print("El ID debe ser entero.")
-        return
-    
-    actual = CRUDDepartamento.consultarparticular(depto_id) 
+    nombre_actual = input("Nombre exacto del departamento a modificar: ").strip()
+    actual = CRUDDepartamento.consultarparticular(nombre_actual) 
     if not actual:
         print("No se encontró el departamento.")
+        input("Presione Enter para continuar...")
         return
 
     print("Deje un campo vacío para conservar su valor actual.")
-    nombre = input(f"Nombre [{actual[1]}]: ").strip() or actual[1]
-    descripcion = input(f"Descripción [{actual[2]}]: ").strip() or actual[2]
+    descripcion = input(f"Descripción [{actual[1]}]: ").strip() or actual[1]
     try:
-        ger_txt = input(f"ID Gerente [{actual[3]}]: ").strip()
-        gerente_emp_id = int(ger_txt) if ger_txt else actual[3]
+        ger_txt = input(f"ID Gerente [{actual[2]}]: ").strip()
+        gerente_emp_id = int(ger_txt) if ger_txt else actual[2]
     except ValueError:
         print("Error de formato numérico.")
+        input("Presione Enter para continuar...")
         return
 
-    d = Departamento(depto_id, nombre, descripcion, gerente_emp_id)
+    # Se mantiene el user_id interno de la BD
+    user_id_bd = actual[3]
+    d = Departamento(nombre_actual, gerente_emp_id, descripcion, user_id_bd)
     
     if CRUDDepartamento.editar(d):
         print("Departamento modificado.")
     else:
         print("Error al modificar.")
+    input("Presione Enter para continuar...")
 
 def eliminar_depto():
-    try:
-        depto_id = int(input("ID del departamento a eliminar: "))
-    except ValueError:
-        print("El ID debe ser entero.")
-        return
-    if CRUDDepartamento.eliminar(depto_id):
+    nombre = input("Nombre exacto del departamento a eliminar: ").strip()
+    if CRUDDepartamento.eliminar(nombre):
         print("Departamento eliminado.")
     else:
         print("No se pudo eliminar.")
+    input("Presione Enter para continuar...")
 
 
 # ==========================================
-# CRUD PROYECTOS
+# CRUD PROYECTOS (PK: user_id)
 # ==========================================
 
 def ingresar_proyecto():
@@ -329,33 +342,43 @@ def ingresar_proyecto():
     descripcion = input("Descripción: ")
     fecha_inicio = input("Fecha de Inicio (YYYY-MM-DD): ")
 
-    p = Proyecto(None, nombre, descripcion, fecha_inicio)
+    if not CRUDValidaciones.validar_fecha(fecha_inicio):
+        print("Error: El formato de fecha no es válido.")
+        input("Presione Enter para continuar...")
+        return
+
+    p = Proyecto(nombre, descripcion, fecha_inicio)
     
     if CRUDProyecto.agregar(p):
         print("Proyecto registrado.")
     else:
         print("Error al registrar proyecto.")
+    input("Presione Enter para continuar...")
 
 def mostrar_proyectos():
     proys = CRUDProyecto.mostrartodos()
     if not proys:
         print("No hay proyectos.")
+        input("Presione Enter para continuar...")
         return
-    print("\nID | Nombre | Descripción | Fecha de inicio")
+    print("\nID (User ID) | Nombre | Descripción | Fecha de inicio")
     print("-" * 60)
     for p in proys:
         print(f"{p[0]} | {p[1]} | {p[2]} | {p[3]}")
+    input("Presione Enter para continuar...")
 
 def modificar_proyecto():
     try:
-        proy_id = int(input("ID del proyecto a modificar: "))
+        proy_id = int(input("ID (user_id) del proyecto a modificar: "))
     except ValueError:
         print("ID debe ser numérico.")
+        input("Presione Enter para continuar...")
         return
     
     actual = CRUDProyecto.consultarparticular(proy_id)
     if not actual:
         print("Proyecto no encontrado.")
+        input("Presione Enter para continuar...")
         return
     
     print("Deje un campo vacío para conservar su valor actual.")
@@ -363,69 +386,78 @@ def modificar_proyecto():
     descripcion = input(f"Descripción [{actual[2]}]: ").strip() or actual[2]
     fecha = input(f"Fecha [{actual[3]}]: ").strip() or actual[3]
 
-    p = Proyecto(proy_id, nombre, descripcion, fecha)
+    p = Proyecto(nombre, descripcion, fecha, proy_id)
     
     if CRUDProyecto.editar(p):
         print("Proyecto modificado.")
     else:
         print("Error al modificar.")
+    input("Presione Enter para continuar...")
 
 def eliminar_proyecto():
     try:
-        proy_id = int(input("ID del proyecto a eliminar: "))
+        proy_id = int(input("ID (user_id) del proyecto a eliminar: "))
     except ValueError:
         print("El ID debe ser entero.")
+        input("Presione Enter para continuar...")
         return
     if CRUDProyecto.eliminar(proy_id):
         print("Proyecto eliminado.")
     else:
         print("No se pudo eliminar.")
+    input("Presione Enter para continuar...")
 
 
 # ==========================================
-# CRUD TIEMPO (Horas Trabajadas)
+# CRUD TIEMPO (PK: user_id)
 # ==========================================
 
 def ingresar_tiempo():
     os.system('cls')
     print("\n--- REGISTRAR TIEMPO ---")
     try:
-        emp_id = int(input("ID del Empleado: "))
-        proy_id = int(input("ID del Proyecto: "))
+        emp_id = int(input("ID numérico del Empleado: "))
+        proy_id = int(input("ID del Proyecto (user_id): "))
         fecha = input("Fecha (YYYY-MM-DD): ")
         horas = float(input("Horas Trabajadas: "))
     except ValueError:
-        print("ID numérico y horas en formato decimal.")
+        print("Error: IDs deben ser enteros y horas en formato decimal.")
+        input("Presione Enter para continuar...")
         return
     descripcion = input("Descripción de tarea: ")
 
-    t = Tiempo(None, emp_id, proy_id, fecha, horas, descripcion)
+    t = RegistroTiempo(emp_id, proy_id, fecha, horas, descripcion)
     
     if CRUDTiempo.agregar(t):
         print("Tiempo registrado correctamente.")
     else:
         print("Error al registrar.")
+    input("Presione Enter para continuar...")
 
 def mostrar_tiempos():
     tiempos = CRUDTiempo.mostrartodos()
     if not tiempos:
         print("No hay registros de tiempo.")
+        input("Presione Enter para continuar...")
         return
-    print("\nID Reg. | Empleado | Proyecto | Fecha | Horas | Descripción")
+    print("\nReg. ID | ID Emp | ID Proy | Fecha | Horas | Descripción")
     print("-" * 80)
     for t in tiempos:
         print(f"{t[0]} | {t[1]} | {t[2]} | {t[3]} | {t[4]} | {t[5]}")
+    input("Presione Enter para continuar...")
 
 def modificar_tiempo():
     try:
-        t_id = int(input("ID del Registro de Tiempo a modificar: "))
+        t_id = int(input("ID del Registro de Tiempo (user_id) a modificar: "))
     except ValueError:
         print("El ID debe ser entero.")
+        input("Presione Enter para continuar...")
         return
     
     actual = CRUDTiempo.consultarparticular(t_id)
     if not actual:
         print("Registro no encontrado.")
+        input("Presione Enter para continuar...")
         return
     
     try:
@@ -438,98 +470,116 @@ def modificar_tiempo():
         horas = float(hrs_txt) if hrs_txt else actual[4]
     except ValueError:
         print("Error de formato numérico.")
+        input("Presione Enter para continuar...")
         return
     descripcion = input(f"Descripción [{actual[5]}]: ").strip() or actual[5]
 
-    t = Tiempo(t_id, emp_id, proy_id, fecha, horas, descripcion)
+    t = RegistroTiempo(emp_id, proy_id, fecha, horas, descripcion, t_id)
     
     if CRUDTiempo.editar(t):
         print("Registro de tiempo modificado.")
     else:
         print("Error al modificar.")
+    input("Presione Enter para continuar...")
 
 def eliminar_tiempo():
     try:
         t_id = int(input("ID del registro a eliminar: "))
     except ValueError:
         print("El ID debe ser entero.")
+        input("Presione Enter para continuar...")
         return
     if CRUDTiempo.eliminar(t_id):
         print("Registro eliminado.")
     else:
         print("No se pudo eliminar.")
+    input("Presione Enter para continuar...")
 
 
 # ==========================================
-# CRUD ASIGNACIÓN (Empleado - Proyecto)
+# CRUD ASIGNACIÓN (PK: empleado_id)
 # ==========================================
 
 def ingresar_asignacion():
     os.system('cls')
     print("\n--- ASIGNAR EMPLEADO A PROYECTO ---")
     try:
-        emp_id = int(input("ID del Empleado: "))
+        emp_id = int(input("ID numérico del Empleado (PK de la tabla): "))
         proy_id = int(input("ID del Proyecto: "))
     except ValueError:
         print("Los IDs deben ser números enteros.")
+        input("Presione Enter para continuar...")
         return
     rol = input("Rol a desempeñar: ")
-    fecha = input("Fecha de inicio (YYYY-MM-DD): ")
 
-    a = Asignacion(emp_id, proy_id, rol, fecha)
+    a = AsignacionEmp(emp_id, proy_id, rol)
     
     if CRUDAsignacion_emp.agregar(a):
         print("Asignación completada.")
     else:
         print("Error al asignar.")
+    input("Presione Enter para continuar...")
 
 def mostrar_asignaciones():
     asig = CRUDAsignacion_emp.mostrartodos()
     if not asig:
         print("No hay asignaciones registradas.")
+        input("Presione Enter para continuar...")
         return
-    print("\nID Emp. | Empleado | ID Proy. | Proyecto | Rol | Fecha Inicio")
+    print("\nID Emp. | ID Proy. | Rol | User_ID | Fecha Inicio")
     print("-" * 80)
     for a in asig:
-        print(f"{a[0]} | {a[1]} | {a[2]} | {a[3]} | {a[4]} | {a[5]}")
+        print(f"{a[0]} | {a[1]} | {a[2]} | {a[3]} | {a[4]}")
+    input("Presione Enter para continuar...")
 
 def modificar_asignacion():
-    print("\n--- MODIFICAR ROL DE ASIGNACIÓN ---")
+    print("\n--- MODIFICAR ASIGNACIÓN ---")
     try:
-        emp_id = int(input("ID del Empleado: "))
-        proy_id = int(input("ID del Proyecto: "))
+        emp_id = int(input("ID del Empleado asignado: "))
     except ValueError:
-        print("Los IDs deben ser números enteros.")
+        print("El ID debe ser un número entero.")
+        input("Presione Enter para continuar...")
         return
 
-    actual = CRUDAsignacion_emp.consultarparticular(emp_id, proy_id)
+    # Nota: la BD original tiene empleado_id como PK
+    actual = CRUDAsignacion_emp.consultarparticular(emp_id)
     if not actual:
-        print("No se encontró esa combinación Empleado-Proyecto.")
+        print("No se encontró esa asignación.")
+        input("Presione Enter para continuar...")
         return
-
+    
+    try:
+        proy_txt = input(f"Nuevo ID Proyecto [{actual[1]}]: ").strip()
+        proy_id = int(proy_txt) if proy_txt else actual[1]
+    except ValueError:
+        print("El ID debe ser numérico.")
+        input("Presione Enter para continuar...")
+        return
+        
     rol = input(f"Nuevo Rol [{actual[2]}]: ").strip() or actual[2]
-    fecha = input(f"Nueva Fecha de Inicio [{actual[3]}]: ").strip() or actual[3]
 
-    a = Asignacion(emp_id, proy_id, rol, fecha)
+    a = AsignacionEmp(emp_id, proy_id, rol)
     
     if CRUDAsignacion_emp.editar(a):
         print("Asignación modificada.")
     else:
         print("Error al modificar.")
+    input("Presione Enter para continuar...")
 
 def eliminar_asignacion():
     print("\n--- ELIMINAR ASIGNACIÓN ---")
     try:
         emp_id = int(input("ID del Empleado a desvincular: "))
-        proy_id = int(input("ID del Proyecto: "))
     except ValueError:
-        print("Los IDs deben ser números enteros.")
+        print("El ID debe ser un número entero.")
+        input("Presione Enter para continuar...")
         return
     
-    if CRUDAsignacion_emp.eliminar(emp_id, proy_id):
+    if CRUDAsignacion_emp.eliminar(emp_id):
         print("Asignación eliminada correctamente.")
     else:
         print("No se pudo eliminar.")
+    input("Presione Enter para continuar...")
 
 
 if __name__ == "__main__":

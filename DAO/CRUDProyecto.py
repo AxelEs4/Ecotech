@@ -5,22 +5,17 @@ user = "userempresa"
 password = "Pimienta12."
 db = "ecotech"
 
-# Creación
 def agregar(p):
     con = None
     try:
         con = Conexion(host, user, password, db)
-        sql = """INSERT INTO proyecto (nombre, descripcion, fecha_inicio) 
-                 VALUES (%s, %s, %s)"""
-        valores = (p.nombre, p.descripcion, p.fecha_inicio)
-
-        cursor = con.ejecuta_query(sql, valores)
-        if cursor is None:
-            raise RuntimeError("Error al ejecutar el INSERT de proyecto.")
+        sql = "INSERT INTO proyecto (nombre, descripcion, fecha_inicio) VALUES (%s, %s, %s)"
+        cursor = con.ejecuta_query(sql, (p.nombre, p.descripcion, p.fecha_inicio))
+        if cursor is None: raise RuntimeError("Error en INSERT.")
         con.commit()
         return True
     except Exception as ex:
-        print(f"Error al agregar proyecto: {ex}")
+        print(f"Error: {ex}")
         if con: con.rollback()
         return False
     finally:
@@ -30,30 +25,25 @@ def editar(p):
     con = None
     try:
         con = Conexion(host, user, password, db)
-        sql = """UPDATE proyecto 
-                 SET nombre=%s, descripcion=%s, fecha_inicio=%s 
-                 WHERE proyecto_id=%s"""
-        proy_id = getattr(p, 'proyecto_id', getattr(p, 'id', None))
-        valores = (p.nombre, p.descripcion, p.fecha_inicio, proy_id)
-
-        cursor = con.ejecuta_query(sql, valores)
-        if cursor is None:
-            raise RuntimeError("Error al ejecutar el UPDATE de proyecto.")
+        # p.user_id almacena el ID del proyecto según el DTO del diagrama
+        sql = "UPDATE proyecto SET nombre=%s, descripcion=%s, fecha_inicio=%s WHERE proyecto_id=%s"
+        cursor = con.ejecuta_query(sql, (p.nombre, p.descripcion, p.fecha_inicio, p.user_id))
+        if cursor is None: raise RuntimeError("Error en UPDATE.")
         con.commit()
         return True
     except Exception as ex:
-        print(f"Error al modificar proyecto: {ex}")
+        print(f"Error: {ex}")
         if con: con.rollback()
         return False
     finally:
         if con: con.desconectar()
 
-def eliminar(id_proyecto):
+def eliminar(proyecto_id):
     con = None
     try:
         con = Conexion(host, user, password, db)
-        sql = "DELETE FROM proyecto WHERE proyecto_id=%s"
-        con.ejecuta_query(sql, (id_proyecto,))
+        # El CASCADE borrará automáticamente horas y asignaciones
+        con.ejecuta_query("DELETE FROM proyecto WHERE proyecto_id=%s", (proyecto_id,))
         con.commit()
         return True
     except Exception:
@@ -74,21 +64,14 @@ def mostrartodos():
     finally:
         if con: con.desconectar()
 
-
-# Consulta particular
-def consultarparticular(id):
+def consultarparticular(proyecto_id):
     con = None
     try:
         con = Conexion(host, user, password, db)
-
-        sql = "SELECT USER_ID, nombre, descripcion, fecha_inicio FROM PROYECTO WHERE USER_ID = %s"
-        cursor = con.ejecuta_query(sql, (id,))
-
+        sql = "SELECT proyecto_id, nombre, descripcion, fecha_inicio FROM proyecto WHERE proyecto_id = %s"
+        cursor = con.ejecuta_query(sql, (proyecto_id,))
         return cursor.fetchone() if cursor else None
-
     except Exception:
         return None
-
     finally:
-        if con:
-            con.desconectar()
+        if con: con.desconectar()
