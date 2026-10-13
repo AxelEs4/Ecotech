@@ -9,9 +9,11 @@ def agregar(a):
     con = None
     try:
         con = Conexion(host, user, password, db)
+        # Solo insertamos los 3 datos reales de la BD normalizada
         sql = "INSERT INTO asignacion_emp (empleado_id, proyecto_id, rol) VALUES (%s, %s, %s)"
         cursor = con.ejecuta_query(sql, (a.empleado_id, a.proyecto_id, a.rol))
-        if cursor is None: raise RuntimeError("Error en INSERT.")
+        
+        if cursor is None: raise RuntimeError("Error en INSERT de asignación.")
         con.commit()
         return True
     except Exception as ex:
@@ -27,7 +29,8 @@ def editar(a):
         con = Conexion(host, user, password, db)
         sql = "UPDATE asignacion_emp SET rol=%s WHERE empleado_id=%s AND proyecto_id=%s"
         cursor = con.ejecuta_query(sql, (a.rol, a.empleado_id, a.proyecto_id))
-        if cursor is None: raise RuntimeError("Error en UPDATE.")
+        
+        if cursor is None: raise RuntimeError("Error en UPDATE de asignación.")
         con.commit()
         return True
     except Exception as ex:
@@ -41,8 +44,8 @@ def eliminar(empleado_id):
     con = None
     try:
         con = Conexion(host, user, password, db)
-        # Elimina todas las asignaciones de ese empleado
-        con.ejecuta_query("DELETE FROM asignacion_emp WHERE empleado_id=%s", (empleado_id,))
+        sql = "DELETE FROM asignacion_emp WHERE empleado_id=%s"
+        con.ejecuta_query(sql, (empleado_id,))
         con.commit()
         return True
     except Exception:
@@ -55,6 +58,7 @@ def mostrartodos():
     con = None
     try:
         con = Conexion(host, user, password, db)
+        # Solo seleccionamos las 3 columnas que existen en el SQL normalizado
         sql = "SELECT empleado_id, proyecto_id, rol FROM asignacion_emp"
         cursor = con.ejecuta_query(sql)
         return cursor.fetchall() if cursor else []

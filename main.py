@@ -119,9 +119,24 @@ def menu_asignacion():
         else: print("Opción no válida.")
 
 def menu_informe():
-    print("\n--- GENERAR INFORME ---")
-    print("Módulo de informes en construcción...")
-    input("Presione Enter para continuar...")
+    os.system('cls')
+    print("==================================================")
+    print("             INFORME GENERAL ECOTECH              ")
+    print("==================================================")
+
+    # Recopilamos los datos usando los DAOs existentes para mostrar totales
+    empleados = CRUDEmpleado.mostrartodos()
+    deptos = CRUDDepartamento.mostrartodos()
+    proyectos = CRUDProyecto.mostrartodos()
+    asignaciones = CRUDAsignacion_emp.mostrartodos()
+
+    print(f"Total de Empleados Registrados  : {len(empleados)}")
+    print(f"Total de Departamentos Activos  : {len(deptos)}")
+    print(f"Total de Proyectos en Curso     : {len(proyectos)}")
+    print(f"Total de Asignaciones Activas   : {len(asignaciones)}")
+    print("==================================================")
+    
+    input("\nPresione Enter para volver al menú principal...")
 
 def main():
     while True:
@@ -510,8 +525,10 @@ def ingresar_asignacion():
         print("Los IDs deben ser números enteros.")
         input("Presione Enter para continuar...")
         return
+    
     rol = input("Rol a desempeñar: ")
 
+    # Constructor idéntico al diagrama (no pide fecha)
     a = AsignacionEmp(emp_id, proy_id, rol)
     
     if CRUDAsignacion_emp.agregar(a):
@@ -526,10 +543,13 @@ def mostrar_asignaciones():
         print("No hay asignaciones registradas.")
         input("Presione Enter para continuar...")
         return
-    print("\nID Emp. | ID Proy. | Rol | User_ID | Fecha Inicio")
-    print("-" * 80)
+    
+    print("\nID Emp. | ID Proy. | Rol")
+    print("-" * 50)
     for a in asig:
-        print(f"{a[0]} | {a[1]} | {a[2]} | {a[3]} | {a[4]}")
+        # Imprime los 3 datos correspondientes a empleado_id, proyecto_id y rol
+        print(f"{a[0]} | {a[1]} | {a[2]}")
+        
     input("Presione Enter para continuar...")
 
 def modificar_asignacion():
