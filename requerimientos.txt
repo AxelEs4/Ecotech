@@ -1,0 +1,6 @@
+# Librerías del proyecto
+pymysql
+bcrypt
+requests
+pwinput
+mysql-connector-python

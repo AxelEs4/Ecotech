@@ -7,6 +7,7 @@ import DAO.CRUDEmpleado as CRUDEmpleado
 import DAO.CRUDProyecto as CRUDProyecto
 import DAO.CRUDTiempo as CRUDTiempo
 import DAO.CRUDValidaciones as CRUDValidaciones
+import DAO.Indicadores as Indicadores
 
 from DTO.Empleado import Empleado
 from DTO.Departamento import Departamento
@@ -30,9 +31,27 @@ def mostrar_menu():
     print("4. Registro de Tiempo")
     print("5. Asignación de Empleado a Proyectos")
     print("6. Generar Informe")
-    print("7. Salir")
+    print("7. Conversion moneda")
+    print("8. Salir")
     print("========================================")
 
+def main():
+    while True:
+        mostrar_menu()
+        opcion = input("INGRESE OPCIÓN : ").strip()
+
+        if opcion == "1": menu_empleados()
+        elif opcion == "2": menu_departamentos()
+        elif opcion == "3": menu_proyectos()
+        elif opcion == "4": menu_registro_tiempo()
+        elif opcion == "5": menu_asignacion()
+        elif opcion == "6": menu_informe()
+        elif opcion == "7": Indicadores.menu_indicadores()
+        elif opcion == "8":
+            print("\nSaliendo del sistema...")
+            break
+        else:
+            print("\n[!] Opción no válida. Intente nuevamente.\n")
 
 def menu_empleados():
     os.system('cls')
@@ -144,22 +163,6 @@ def menu_informe():
     
     input("\nPresione Enter para volver al menú principal...")
 
-def main():
-    while True:
-        mostrar_menu()
-        opcion = input("INGRESE OPCIÓN : ").strip()
-
-        if opcion == "1": menu_empleados()
-        elif opcion == "2": menu_departamentos()
-        elif opcion == "3": menu_proyectos()
-        elif opcion == "4": menu_registro_tiempo()
-        elif opcion == "5": menu_asignacion()
-        elif opcion == "6": menu_informe()
-        elif opcion == "7":
-            print("\nSaliendo del sistema...")
-            break
-        else:
-            print("\n[!] Opción no válida. Intente nuevamente.\n")
 
 
 # ==========================================
