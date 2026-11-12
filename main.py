@@ -24,78 +24,112 @@ from DTO.Usuario import Usuario
 
 def ingresoUsuario():
     os.system('cls')
-
-    username = input("Ingrese su nombre de usuario: ").strip()
-
-    while True:
-        try:
-            pass1= getpass("Ingrese su contraseña: ")
-            pass2= getpass("Confirme su contraseña: ")
-            if pass1 != pass2:
-                    print("Las contraseñas no coinciden. Intente nuevamente.")
+    try:
+        while True:
+            while True:
+                username = input("Ingrese su nombre de usuario: ").strip()
+                if CRUDValidaciones.existe_usuario(username):
+                    print(ValueError("Error: Ya existe un usuario con ese nombre de usuario."))
+                elif not CRUDValidaciones.existe_usuario(username):
                     break
-            
-            nombre = input("Nombre: ")
-            apellidos = input("Apellidos: ")
-            correo = input("Correo: ")
+            while True:
+                pass1 = getpass("Ingrese su contraseña: ")
+                if pass1 == "":
+                    print("La contraseña no puede estar vacía.")
+                    continue
+                pass2 = getpass("Confirme su contraseña: ")
+                if pass1 != pass2:
+                    print("Las contraseñas no coinciden. Intente nuevamente.")
+                    continue
+                break   
+            while True:
+                nombre = input("Nombre: ")
+                if not nombre == "":
+                    break
+                else:
+                    print(ValueError("El nombre no puede estar vacío."))
+            while True:
+                apellidos = input("Apellidos: ")
+                if not apellidos == "":
+                    break
+                else:
+                    print(ValueError("Los apellidos no pueden estar vacíos."))
+            while True:
+                correo = input("Correo: ")
+                if not CRUDValidaciones.validar_correo(correo):
+                    print(ValueError("Formato de correo inválido. Debe contener '@' y un dominio válido."))
+                else:
+                    break
 
             print("\nTipos de usuario disponibles:")
             print("1. Administrador")
             print("2. Operador")
             tipo = input("Seleccione el tipo de usuario: ")
-            tipo_usuario = "administrador" if tipo == "1" else "operador"
+            while True:
+                if tipo == "1":
+                    tipo_usuario = "administrador"
+                    break
+                elif tipo == "2":
+                    tipo_usuario = "operador"
+                    break
+                else:
+                    print("Opción no válida.")
+                    tipo = input("Seleccione el tipo de usuario: ")
 
             usuario = Usuario.register(username, pass1, nombre, apellidos, correo, tipo_usuario)
 
             if usuario:
                 print("Usuario registrado exitosamente.")
+                break
             else:
                 print("No se pudo registrar el usuario. Revise el error anterior.")
-            input("Presione Enter para continuar...")
-            break
-        except Exception as e:
-            print(f"Error al registrar usuario: {e}")
-            input("Presione Enter para continuar...")
-            break
+                input("Presione Enter para continuar...")
+                break
+    except Exception as e:
+        print(f"Error al registrar usuario: {e}")
+        input("Presione Enter para continuar...")
 
 def loginUsuario():
-    os.system('cls')
-    username = input("Ingrese su nombre de usuario: ").strip()
-    password = getpass("Ingrese su contraseña: ")
+    while True:
+        os.system('cls')
+        username = input("Ingrese su nombre de usuario: ").strip()
+        password = getpass("Ingrese su contraseña: ")
 
-    usuario = Usuario.login(username, password)
+        usuario = Usuario.login(username, password)
 
-    if usuario:
-        print(f"Bienvenido, {usuario.nombre} {usuario.apellidos} ({usuario.tipo_usuario})")
-        input("Presione Enter para continuar...")
-        if usuario.tipo_usuario == "Administrador":
-            mainAdmin()
-        elif usuario.tipo_usuario == "Operador":
-            mainOperador()
-        return usuario
-    else:
-        print("Usuario o contraseña incorrectos.")
-        input("Presione Enter para continuar...")
-        return None
-
+        if usuario:
+            print(f"Bienvenido, {usuario.nombre} {usuario.apellidos} ({usuario.tipo_usuario})")
+            input("Presione Enter para continuar...")
+            if usuario.tipo_usuario == "Administrador":
+                mainAdmin()
+            elif usuario.tipo_usuario == "Operador":
+                mainOperador()
+        else:
+            print("Usuario o contraseña incorrectos.")
+            input("Presione Enter para continuar...")
+            break
 def menuUsuarios():
-    os.system('cls')
-    print("========================================")
-    print("          MENÚ DE USUARIOS          ")
-    print("========================================")
-    print("1. Iniciar sesión")
-    print("2. Registrarse")
-    print("3. Volver al menú principal")
-    print("========================================")
+    while True:
+        os.system('cls')
+        print("========================================")
+        print("          MENÚ DE USUARIOS          ")
+        print("========================================")
+        print("1. Iniciar sesión")
+        print("2. Registrarse")
+        print("3. Salir del programa")
+        print("========================================")
 
-    res =input("Ingrese opción: ")
-    if res == "1":
-        loginUsuario()
-    elif res == "2":
-        ingresoUsuario()
-    else:
-        print("Opción no válida. Volviendo al menú principal.")
-        input("Presione Enter para continuar...")
+        res =input("Ingrese opción: ")
+        if res == "1":
+            loginUsuario()
+        elif res == "2":
+            ingresoUsuario()
+        elif res == "3":
+            print("Saliendo del programa...")
+            break
+        else:
+            print("Opción no válida.")
+            input("Presione Enter para continuar...")
 
 def mostrar_menu():
     os.system('cls')
@@ -118,17 +152,15 @@ def mainOperador():
         print("========================================")
         print("          MENÚ PRINCIPAL          ")
         print("========================================")
-        print("1. Gestión de Proyectos")
-        print("2. Registro de Tiempo")
-        print("3. Conversion moneda")
-        print("4. Salir")
+        print("1. Registro de Tiempo")
+        print("2. Conversion moneda")
+        print("3. Salir")
         
         opcion = input("INGRESE OPCIÓN : ").strip()
 
-        if opcion == "1": menu_proyectos()
-        elif opcion == "2": menu_registro_tiempo()
-        elif opcion == "3": Indicadores.menu_indicadores()
-        elif opcion == "4":
+        if opcion == "1": menu_registro_tiempo()
+        elif opcion == "2": Indicadores.menu_indicadores()
+        elif opcion == "3":
             print("\nSaliendo del sistema...")
             break
         else:
@@ -506,7 +538,7 @@ def mostrar_deptos():
 
 def modificar_depto():
     os.system('cls')
-    mostrar_deptos()
+    CRUDDepartamento.mostrartodos()
     nombre_actual = input("Nombre exacto del departamento a modificar: ").strip()
     actual = CRUDDepartamento.consultarparticular(nombre_actual) 
     if not actual:
@@ -555,7 +587,7 @@ def modificar_depto():
 
 def eliminar_depto():
     os.system('cls')
-    mostrar_deptos()
+    CRUDDepartamento.mostrartodos()
     nombre = input("Nombre exacto del departamento a eliminar: ").strip()
     departamento = CRUDDepartamento.consultarparticular(nombre)
     if not departamento:
@@ -674,7 +706,7 @@ def mostrar_proyectos():
 
 def modificar_proyecto():
     try:
-        mostrar_proyectos()
+        CRUDProyecto.mostrartodos()
         proy_id = int(input("ID (user_id) del proyecto a modificar: "))
     except ValueError:
         print("ID debe ser numérico.")
@@ -702,7 +734,7 @@ def modificar_proyecto():
 
 def eliminar_proyecto():
     try:
-        mostrar_proyectos()
+        CRUDProyecto.mostrartodos()
         proy_id = int(input("ID (user_id) del proyecto a eliminar: "))
     except ValueError:
         print("El ID debe ser entero.")
@@ -723,6 +755,7 @@ def ingresar_tiempo():
     os.system('cls')
     print("\n--- REGISTRAR TIEMPO ---")
     try:
+        CRUDEmpleado.mostrartodos()
         emp_id = int(input("ID numérico del Empleado: "))
         proy_id = int(input("ID del Proyecto (user_id): "))
         fecha = input("Fecha (YYYY-MM-DD): ")
@@ -755,6 +788,7 @@ def mostrar_tiempos():
 
 def modificar_tiempo():
     try:
+        CRUDTiempo.mostrartodos()
         t_id = int(input("ID del Registro de Tiempo (user_id) a modificar: "))
     except ValueError:
         print("El ID debe ser entero.")
@@ -791,6 +825,7 @@ def modificar_tiempo():
 
 def eliminar_tiempo():
     try:
+        CRUDTiempo.mostrartodos()
         t_id = int(input("ID del registro a eliminar: "))
     except ValueError:
         print("El ID debe ser entero.")

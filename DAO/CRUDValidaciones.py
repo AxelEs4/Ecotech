@@ -14,6 +14,17 @@ def validar_fecha(fecha_str):
     except ValueError:
         return False
 
+def existe_usuario(username):
+    con = None
+    try:
+        con = Conexion(host, user, password, db)
+        cursor = con.ejecuta_query("SELECT username FROM usuario WHERE username = %s", (username,))
+        return cursor.fetchone() is not None
+    except:
+        return False
+    finally:
+        if con: con.desconectar()
+
 def existe_empleado(run):
     con = None
     try:
