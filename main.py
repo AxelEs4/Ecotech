@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from getpass import getpass
 
 import DAO.CRUDAsignacion_emp as CRUDAsignacion_emp
 import DAO.CRUDDepartamento as CRUDDepartamento
@@ -14,11 +15,87 @@ from DTO.Departamento import Departamento
 from DTO.Proyecto import Proyecto
 from DTO.RegistroTiempo import RegistroTiempo
 from DTO.Asignacion import AsignacionEmp
+from DTO.Usuario import Usuario
 
 
 # ==========================================
 # MENÚS PRINCIPALES Y SUBMENÚS
 # ==========================================
+
+def ingresoUsuario():
+    os.system('cls')
+
+    username = input("Ingrese su nombre de usuario: ").strip()
+
+    while True:
+        try:
+            pass1= getpass("Ingrese su contraseña: ")
+            pass2= getpass("Confirme su contraseña: ")
+            if pass1 != pass2:
+                    print("Las contraseñas no coinciden. Intente nuevamente.")
+                    break
+            
+            nombre = input("Nombre: ")
+            apellidos = input("Apellidos: ")
+            correo = input("Correo: ")
+
+            print("\nTipos de usuario disponibles:")
+            print("1. Administrador")
+            print("2. Operador")
+            tipo = input("Seleccione el tipo de usuario: ")
+            tipo_usuario = "administrador" if tipo == "1" else "operador"
+
+            usuario = Usuario.register(username, pass1, nombre, apellidos, correo, tipo_usuario)
+
+            if usuario:
+                print("Usuario registrado exitosamente.")
+            else:
+                print("No se pudo registrar el usuario. Revise el error anterior.")
+            input("Presione Enter para continuar...")
+            break
+        except Exception as e:
+            print(f"Error al registrar usuario: {e}")
+            input("Presione Enter para continuar...")
+            break
+
+def loginUsuario():
+    os.system('cls')
+    username = input("Ingrese su nombre de usuario: ").strip()
+    password = getpass("Ingrese su contraseña: ")
+
+    usuario = Usuario.login(username, password)
+
+    if usuario:
+        print(f"Bienvenido, {usuario.nombre} {usuario.apellidos} ({usuario.tipo_usuario})")
+        input("Presione Enter para continuar...")
+        if usuario.tipo_usuario == "Administrador":
+            mainAdmin()
+        elif usuario.tipo_usuario == "Operador":
+            mainOperador()
+        return usuario
+    else:
+        print("Usuario o contraseña incorrectos.")
+        input("Presione Enter para continuar...")
+        return None
+
+def menuUsuarios():
+    os.system('cls')
+    print("========================================")
+    print("          MENÚ DE USUARIOS          ")
+    print("========================================")
+    print("1. Iniciar sesión")
+    print("2. Registrarse")
+    print("3. Volver al menú principal")
+    print("========================================")
+
+    res =input("Ingrese opción: ")
+    if res == "1":
+        loginUsuario()
+    elif res == "2":
+        ingresoUsuario()
+    else:
+        print("Opción no válida. Volviendo al menú principal.")
+        input("Presione Enter para continuar...")
 
 def mostrar_menu():
     os.system('cls')
@@ -35,7 +112,29 @@ def mostrar_menu():
     print("8. Salir")
     print("========================================")
 
-def main():
+def mainOperador():
+    while True:
+        os.system('cls')
+        print("========================================")
+        print("          MENÚ PRINCIPAL          ")
+        print("========================================")
+        print("1. Gestión de Proyectos")
+        print("2. Registro de Tiempo")
+        print("3. Conversion moneda")
+        print("4. Salir")
+        
+        opcion = input("INGRESE OPCIÓN : ").strip()
+
+        if opcion == "1": menu_proyectos()
+        elif opcion == "2": menu_registro_tiempo()
+        elif opcion == "3": Indicadores.menu_indicadores()
+        elif opcion == "4":
+            print("\nSaliendo del sistema...")
+            break
+        else:
+            print("\n[!] Opción no válida. Intente nuevamente.\n")
+
+def mainAdmin():
     while True:
         mostrar_menu()
         opcion = input("INGRESE OPCIÓN : ").strip()
@@ -722,4 +821,4 @@ def eliminar_asignacion():
 
 
 if __name__ == "__main__":
-    main()
+    menuUsuarios()
