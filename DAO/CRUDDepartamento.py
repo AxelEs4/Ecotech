@@ -42,14 +42,47 @@ def editar(d):
     finally:
         if con: con.desconectar()
 
-def eliminar(nombre):
+def eliminar(nombre, accion_empleados=None, departamento_destino_id=None):
     con = None
     try:
         con = Conexion(host, user, password, db)
-        con.ejecuta_query("DELETE FROM departamento WHERE nombre=%s", (nombre,))
+        cursor = con.ejecuta_query(
+            "SELECT departamento_id FROM departamento WHERE nombre=%s FOR UPDATE",
+            (nombre,)
+        )
+        if cursor is None:
+            raise RuntimeError("No se pudo consultar el departamento.")
+        departamento = cursor.fetchone()
+        if departamento is None:
+            return False
+        departamento_id = departamento[0]
+
+        if accion_empleados == "eliminar":
+            cursor = con.ejecuta_query(
+                "DELETE FROM empleado WHERE departamento_id=%s",
+                (departamento_id,)
+            )
+            if cursor is None:
+                raise RuntimeError("No se pudieron eliminar los empleados del departamento.")
+        elif accion_empleados == "reasignar":
+            if departamento_destino_id is None or departamento_destino_id == departamento_id:
+                raise ValueError("Debe seleccionar otro departamento como destino.")
+            cursor = con.ejecuta_query(
+                "UPDATE empleado SET departamento_id=%s WHERE departamento_id=%s",
+                (departamento_destino_id, departamento_id)
+            )
+            if cursor is None:
+                raise RuntimeError("No se pudieron reasignar los empleados.")
+        elif accion_empleados is not None:
+            raise ValueError("Acción de empleados no válida.")
+
+        cursor = con.ejecuta_query("DELETE FROM departamento WHERE departamento_id=%s", (departamento_id,))
+        if cursor is None:
+            raise RuntimeError("No se pudo eliminar el departamento.")
         con.commit()
         return True
-    except Exception:
+    except Exception as ex:
+        print(f"Error al eliminar departamento: {ex}")
         if con: con.rollback()
         return False
     finally:

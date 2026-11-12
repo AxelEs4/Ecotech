@@ -557,7 +557,79 @@ def eliminar_depto():
     os.system('cls')
     mostrar_deptos()
     nombre = input("Nombre exacto del departamento a eliminar: ").strip()
-    if CRUDDepartamento.eliminar(nombre):
+    departamento = CRUDDepartamento.consultarparticular(nombre)
+    if not departamento:
+        print("No se encontró el departamento.")
+        input("Presione Enter para continuar...")
+        return
+
+    departamentos = CRUDDepartamento.mostrartodos()
+    empleados = [
+        empleado for empleado in CRUDEmpleado.mostrartodos()
+        if empleado[7] == departamento[3]
+    ]
+    accion_empleados = None
+    departamento_destino_id = None
+
+    if empleados:
+        print(f"\nEl departamento tiene {len(empleados)} empleado(s):")
+        for empleado in empleados:
+            print(f"{empleado[0]} | {empleado[1]}")
+        print("\nSeleccione qué hacer con estos empleados:")
+        print("1. Eliminar empleados")
+        print("2. Reasignar empleados a otro departamento")
+        opcion = input("Ingrese opción: ").strip()
+
+        if opcion == "1":
+            accion_empleados = "eliminar"
+        elif opcion == "2":
+            destinos = [
+                otro for otro in departamentos
+                if otro[3] != departamento[3]
+            ]
+            if not destinos:
+                print("No hay otro departamento disponible para reasignar los empleados.")
+                input("Presione Enter para continuar...")
+                return
+
+            print("\nDepartamentos disponibles:")
+            for destino in destinos:
+                print(f"{destino[3]} | {destino[0]}")
+            try:
+                departamento_destino_id = int(input("ID del departamento destino: ").strip())
+            except ValueError:
+                print("El ID del departamento debe ser un entero.")
+                input("Presione Enter para continuar...")
+                return
+
+            if departamento_destino_id not in {destino[3] for destino in destinos}:
+                print("Seleccione un departamento de la lista.")
+                input("Presione Enter para continuar...")
+                return
+            accion_empleados = "reasignar"
+        else:
+            print("Eliminación cancelada.")
+            input("Presione Enter para continuar...")
+            return
+
+    if accion_empleados == "eliminar":
+        confirmacion = input(
+            f"¿Eliminar el departamento y sus {len(empleados)} empleado(s)? "
+            "También se eliminarán sus registros relacionados. (s/n): "
+        ).strip().lower()
+    elif accion_empleados == "reasignar":
+        confirmacion = input(
+            f"¿Reasignar los empleados y eliminar el departamento {nombre}? (s/n): "
+        ).strip().lower()
+    else:
+        confirmacion = input(f"¿Eliminar el departamento {nombre}? (s/n): ").strip().lower()
+
+    if confirmacion != "s":
+        print("Eliminación cancelada.")
+        input("Presione Enter para continuar...")
+        return
+
+    if CRUDDepartamento.eliminar(nombre, accion_empleados, departamento_destino_id):
         print("Departamento eliminado.")
     else:
         print("No se pudo eliminar.")
@@ -602,6 +674,7 @@ def mostrar_proyectos():
 
 def modificar_proyecto():
     try:
+        mostrar_proyectos()
         proy_id = int(input("ID (user_id) del proyecto a modificar: "))
     except ValueError:
         print("ID debe ser numérico.")
@@ -629,6 +702,7 @@ def modificar_proyecto():
 
 def eliminar_proyecto():
     try:
+        mostrar_proyectos()
         proy_id = int(input("ID (user_id) del proyecto a eliminar: "))
     except ValueError:
         print("El ID debe ser entero.")
