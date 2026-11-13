@@ -103,7 +103,7 @@ def loginUsuario():
             if usuario.tipo_usuario == "Administrador":
                 mainAdmin()
             elif usuario.tipo_usuario == "Operador":
-                menuOperador(usuario)
+                menuOperador()
         else:
             print("Usuario o contraseña incorrectos.")
             input("Presione Enter para continuar...")
@@ -146,21 +146,19 @@ def mostrar_menu():
     print("8. Salir")
     print("========================================")
 
-def menuOperador(usuario):
+def menuOperador():
     while True:
         os.system('cls')
         print("========================================")
         print("          MENÚ PRINCIPAL          ")
-        print("========================================")
-        print(f"Usuario: {usuario.nombre} {usuario.apellidos} | ID: {usuario.user_id}")
-        
+        print("========================================")        
         print("1. Registro de Tiempo")
         print("2. Conversion moneda")
         print("3. Salir")
         
         opcion = input("INGRESE OPCIÓN : ").strip()
 
-        if opcion == "1": menu_registro_tiempo()
+        if opcion == "1": menu_registro_tiempo_op()
         elif opcion == "2": Indicadores.menu_indicadores()
         elif opcion == "3":
             print("\nSaliendo del sistema...")
@@ -397,10 +395,10 @@ def mostrardatos():
         input("Presione Enter para continuar...")
         return
 
-    print("\nRUN | Nombre | Dirección | Teléfono | Correo | Fecha inicio | Salario | Depto ID")
+    print("\nID | RUN | Nombre | Dirección | Teléfono | Correo | Fecha inicio | Salario | Depto ID")
     print("-" * 100)
     for emp in empleados:
-        print(f"{emp[0]} | {emp[1]} | {emp[2]} | {emp[3]} | {emp[4]} | {emp[5]} | {emp[6]} | {emp[7]}")
+        print(f"{emp[8]} | {emp[0]} | {emp[1]} | {emp[2]} | {emp[3]} | {emp[4]} | {emp[5]} | {emp[6]} | {emp[7]}")
     input("Presione Enter para continuar...")
 
 def modificardatos():
@@ -713,7 +711,7 @@ def mostrar_proyectos():
 def modificar_proyecto():
     try:
         mostrar_proyectos()
-        proy_id = int(input("ID (user_id) del proyecto a modificar: "))
+        proy_id = int(input("ID del proyecto a modificar: "))
     except ValueError:
         print("ID debe ser numérico.")
         input("Presione Enter para continuar...")
@@ -741,7 +739,7 @@ def modificar_proyecto():
 def eliminar_proyecto():
     try:
         mostrar_proyectos()
-        proy_id = int(input("ID (user_id) del proyecto a eliminar: "))
+        proy_id = int(input("ID del proyecto a eliminar: "))
     except ValueError:
         print("El ID debe ser entero.")
         input("Presione Enter para continuar...")
@@ -956,42 +954,7 @@ def eliminar_asignacion():
         print("No se pudo eliminar.")
     input("Presione Enter para continuar...")
 
-def ingresar_tiempo_op(usuario):
-    os.system('cls')
-    print("\n--- REGISTRAR TIEMPO ---")
-    try:
-        proy_id = int(input("ID del Proyecto (user_id): "))
-        fecha = input("Fecha (YYYY-MM-DD): ")
-        horas = float(input("Horas Trabajadas: "))
-    except ValueError:
-        print("Error: ID del proyecto debe ser entero y horas en formato decimal.")
-        input("Presione Enter para continuar...")
-        return
-    descripcion = input("Descripción de tarea: ")
-
-    t = RegistroTiempo(usuario.user_id, proy_id, fecha, horas, descripcion)
-    
-    if CRUDTiempo.agregar(t):
-        print("Tiempo registrado correctamente.")
-    else:
-        print("Error al registrar.")
-    input("Presione Enter para continuar...")
-
-def mostrar_tiempos_op(usuario):
-    os.system('cls')
-    tiempos = CRUDTiempo.mostrartodos_usuario(usuario.user_id)
-    if not tiempos:
-        print("No hay registros de tiempo para este usuario.")
-        input("Presione Enter para continuar...")
-        return
-    print("\nReg. ID | ID Emp | ID Proy | Fecha | Horas | Descripción")
-    print("-" * 80)
-    for t in tiempos:
-        print(f"{t[0]} | {t[1]} | {t[2]} | {t[3]} | {t[4]} | {t[5]}")
-    input("Presione Enter para continuar...")
-
-
-def menu_registro_tiempo_op(usuario):
+def menu_registro_tiempo_op():
     while True:
         os.system('cls')
         print("\n--- REGISTRO DE TIEMPO ---")
@@ -1000,8 +963,8 @@ def menu_registro_tiempo_op(usuario):
         print("3. Volver al menú principal")
         opcion = input("Ingrese opción: ").strip()
 
-        if opcion == "1": ingresar_tiempo_op(usuario)
-        elif opcion == "2": mostrar_tiempos_op(usuario)
+        if opcion == "1": ingresar_tiempo()
+        elif opcion == "2": mostrar_tiempos()
         elif opcion == "3": return
         else: print("Opción no válida.")
 

@@ -48,16 +48,6 @@ CREATE TABLE `departamento` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Volcado de datos para la tabla `departamento`
---
-
-INSERT INTO `departamento` (`departamento_id`, `nombre`, `descripcion`, `gerente_emp_id`) VALUES
-(5, 'ñ', 'ñ', NULL),
-(6, '', '', NULL);
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `empleado`
 --
 
@@ -72,13 +62,6 @@ CREATE TABLE `empleado` (
   `salario` float NOT NULL,
   `departamento_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Volcado de datos para la tabla `empleado`
---
-
-INSERT INTO `empleado` (`empleado_id`, `run`, `nombre`, `direccion`, `telefono`, `correo`, `fecha_inicio`, `salario`, `departamento_id`) VALUES
-(3, '21725417-5', 'Axel', 'ñ', '123456789', 'l@l.cl', '2026-12-11', 0, 5);
 
 -- --------------------------------------------------------
 
@@ -117,24 +100,6 @@ CREATE TABLE `tiempo` (
 
 -- --------------------------------------------------------
 
---
--- Estructura de tabla para la tabla `tipo`
---
-
-CREATE TABLE `tipo` (
-  `id` int(11) NOT NULL,
-  `nombre` varchar(45) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Volcado de datos para la tabla `tipo`
---
-
-INSERT INTO `tipo` (`id`, `nombre`) VALUES
-(1, 'Cliente Normal'),
-(2, 'VIP'),
-(3, 'Empresa');
-
 -- --------------------------------------------------------
 
 --
@@ -152,19 +117,6 @@ CREATE TABLE `usuario` (
   `fecha_registro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Volcado de datos para la tabla `usuario`
---
-
-INSERT INTO `usuario` (`user_id`, `username`, `password_hash`, `nombre`, `apellidos`, `correo`, `tipo_usuario`, `fecha_registro`) VALUES
-(1, 'a', '$2b$12$kpmPmvkcP6OknVXa44ySLOfXyoCcvMyRmrG/btQjg.cckOhqJkqjy', 'a', 'a', 'a@a', 'Administrador', '2026-11-12 03:12:25'),
-(2, 'e', '$2b$12$pFdlY9Sxf3F29jSkgYjSyu3iiiiJZBLK339MdEH/B1hcYzIgGlwqa', 'e', 'e', 'e@e', 'Operador', '2026-11-12 03:25:25');
-
---
--- Índices para tablas volcadas
---
-
---
 -- Indices de la tabla `asignacion_emp`
 --
 ALTER TABLE `asignacion_emp`
