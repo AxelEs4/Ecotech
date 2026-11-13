@@ -761,7 +761,7 @@ def ingresar_tiempo():
     os.system('cls')
     print("\n--- REGISTRAR TIEMPO ---")
     try:
-        mostrar_empleados()
+        mostrardatos()
         emp_id = int(input("ID numérico del Empleado: "))
         proy_id = int(input("ID del Proyecto (user_id): "))
         fecha = input("Fecha (YYYY-MM-DD): ")
