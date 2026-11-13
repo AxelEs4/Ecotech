@@ -103,7 +103,7 @@ def loginUsuario():
             if usuario.tipo_usuario == "Administrador":
                 mainAdmin()
             elif usuario.tipo_usuario == "Operador":
-                mainOperador()
+                menuOperador(usuario)
         else:
             print("Usuario o contraseña incorrectos.")
             input("Presione Enter para continuar...")
@@ -146,12 +146,14 @@ def mostrar_menu():
     print("8. Salir")
     print("========================================")
 
-def mainOperador():
+def menuOperador(usuario):
     while True:
         os.system('cls')
         print("========================================")
         print("          MENÚ PRINCIPAL          ")
         print("========================================")
+        print(f"Usuario: {usuario.nombre} {usuario.apellidos} | ID: {usuario.user_id}")
+        
         print("1. Registro de Tiempo")
         print("2. Conversion moneda")
         print("3. Salir")
@@ -349,10 +351,8 @@ def ingresardatos():
         if not CRUDValidaciones.validar_fecha(fecha_inicio):
             print("Error: El formato de fecha no es válido.")
             continue
-        if datetime.strptime(fecha_inicio, "%Y-%m-%d").date() < datetime.now().date():
-            print("Error: La fecha de inicio no puede ser pasada.")
-            continue
-        break
+        else:
+            break
 
     while True:
         try:
@@ -405,6 +405,7 @@ def mostrardatos():
 
 def modificardatos():
     os.system('cls')
+    mostrardatos()
     empleados = CRUDEmpleado.mostrartodos()
     if not empleados:
         print("No hay empleados para modificar.")
@@ -446,6 +447,7 @@ def modificardatos():
 
 def eliminardatos():
     os.system('cls')
+    mostrardatos()
     empleados = CRUDEmpleado.mostrartodos()
     if not empleados:
         print("No hay empleados para eliminar.")
@@ -479,7 +481,11 @@ def ingresar_depto():
     os.system('cls')
     print("\n--- INGRESAR DEPARTAMENTO ---")
     nombre = input("Ingrese Nombre del Departamento: ")
-    if CRUDValidaciones.existe_departamento(nombre):
+    if nombre == "":
+        print("Error: El nombre del departamento no puede estar vacío.")
+        input("Presione Enter para continuar...")
+        return
+    elif CRUDValidaciones.existe_departamento(nombre):
         print("Error: Ya existe un departamento con ese nombre.")
         input("Presione Enter para continuar...")
         return
@@ -530,7 +536,7 @@ def mostrar_deptos():
         print("No hay departamentos para mostrar.")
         input("Presione Enter para continuar...")
         return
-    print("\nNombre | Descripción | ID Gerente | User ID Interno")
+    print("\nNombre | Descripción | ID Gerente | ID Interno")
     print("-" * 60)
     for d in deptos:
         print(f"{d[0]} | {d[1]} | {d[2]} | {d[3]}")
@@ -538,7 +544,7 @@ def mostrar_deptos():
 
 def modificar_depto():
     os.system('cls')
-    CRUDDepartamento.mostrartodos()
+    mostrar_deptos()
     nombre_actual = input("Nombre exacto del departamento a modificar: ").strip()
     actual = CRUDDepartamento.consultarparticular(nombre_actual) 
     if not actual:
@@ -587,7 +593,7 @@ def modificar_depto():
 
 def eliminar_depto():
     os.system('cls')
-    CRUDDepartamento.mostrartodos()
+    mostrar_deptos()
     nombre = input("Nombre exacto del departamento a eliminar: ").strip()
     departamento = CRUDDepartamento.consultarparticular(nombre)
     if not departamento:
@@ -698,7 +704,7 @@ def mostrar_proyectos():
         print("No hay proyectos.")
         input("Presione Enter para continuar...")
         return
-    print("\nID (User ID) | Nombre | Descripción | Fecha de inicio")
+    print("\nID | Nombre | Descripción | Fecha de inicio")
     print("-" * 60)
     for p in proys:
         print(f"{p[0]} | {p[1]} | {p[2]} | {p[3]}")
@@ -706,7 +712,7 @@ def mostrar_proyectos():
 
 def modificar_proyecto():
     try:
-        CRUDProyecto.mostrartodos()
+        mostrar_proyectos()
         proy_id = int(input("ID (user_id) del proyecto a modificar: "))
     except ValueError:
         print("ID debe ser numérico.")
@@ -734,7 +740,7 @@ def modificar_proyecto():
 
 def eliminar_proyecto():
     try:
-        CRUDProyecto.mostrartodos()
+        mostrar_proyectos()
         proy_id = int(input("ID (user_id) del proyecto a eliminar: "))
     except ValueError:
         print("El ID debe ser entero.")
@@ -755,7 +761,7 @@ def ingresar_tiempo():
     os.system('cls')
     print("\n--- REGISTRAR TIEMPO ---")
     try:
-        CRUDEmpleado.mostrartodos()
+        mostrar_empleados()
         emp_id = int(input("ID numérico del Empleado: "))
         proy_id = int(input("ID del Proyecto (user_id): "))
         fecha = input("Fecha (YYYY-MM-DD): ")
@@ -788,7 +794,12 @@ def mostrar_tiempos():
 
 def modificar_tiempo():
     try:
-        CRUDTiempo.mostrartodos()
+        mostrardatos()
+        tiempo =CRUDTiempo.mostrartodos()
+        if not tiempo:
+            print("No hay registros de tiempo para modificar.")
+            input("Presione Enter para continuar...")
+            return
         t_id = int(input("ID del Registro de Tiempo (user_id) a modificar: "))
     except ValueError:
         print("El ID debe ser entero.")
@@ -844,25 +855,32 @@ def eliminar_tiempo():
 
 def ingresar_asignacion():
     os.system('cls')
-    print("\n--- ASIGNAR EMPLEADO A PROYECTO ---")
-    try:
-        emp_id = int(input("ID numérico del Empleado (PK de la tabla): "))
-        proy_id = int(input("ID del Proyecto: "))
-    except ValueError:
-        print("Los IDs deben ser números enteros.")
-        input("Presione Enter para continuar...")
-        return
-    
-    rol = input("Rol a desempeñar: ")
+    while True:
+        empleados = CRUDEmpleado.mostrartodos()
+        if not empleados:
+            print("No hay empleados registrados. Debe ingresar al menos un empleado antes de asignar.")
+            input("Presione Enter para continuar...")
+            return
+        print("\n--- ASIGNAR EMPLEADO A PROYECTO ---")
+        try:
+            mostrardatos()
+            emp_id = int(input("ID numérico del Empleado : "))
+            proy_id = int(input("ID del Proyecto: "))
+        except ValueError:
+            print("Los IDs deben ser números enteros.")
+            input("Presione Enter para continuar...")
+            return
+        
+        rol = input("Rol a desempeñar: ")
 
-    # Constructor idéntico al diagrama (no pide fecha)
-    a = AsignacionEmp(emp_id, proy_id, rol)
-    
-    if CRUDAsignacion_emp.agregar(a):
-        print("Asignación completada.")
-    else:
-        print("Error al asignar.")
-    input("Presione Enter para continuar...")
+        # Constructor idéntico al diagrama (no pide fecha)
+        a = AsignacionEmp(emp_id, proy_id, rol)
+        
+        if CRUDAsignacion_emp.agregar(a):
+            print("Asignación completada.")
+        else:
+            print("Error al asignar.")
+        input("Presione Enter para continuar...")
 
 def mostrar_asignaciones():
     asig = CRUDAsignacion_emp.mostrartodos()
@@ -881,6 +899,11 @@ def mostrar_asignaciones():
 
 def modificar_asignacion():
     print("\n--- MODIFICAR ASIGNACIÓN ---")
+    asig = mostrar_asignaciones()
+    if not asig:
+        print("No hay asignaciones para modificar.")
+        input("Presione Enter para continuar...")
+        return
     try:
         emp_id = int(input("ID del Empleado asignado: "))
     except ValueError:
@@ -915,6 +938,11 @@ def modificar_asignacion():
 
 def eliminar_asignacion():
     print("\n--- ELIMINAR ASIGNACIÓN ---")
+    asig = mostrar_asignaciones()
+    if not asig:
+        print("No hay asignaciones para eliminar.")
+        input("Presione Enter para continuar...")
+        return
     try:
         emp_id = int(input("ID del Empleado a desvincular: "))
     except ValueError:

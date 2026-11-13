@@ -16,7 +16,7 @@ def menu_indicadores():
 
             if opcion==1:
                 os.system("cls")
-                fecha=input("Ingrese la fecha en formato DD-MM-AA: ")
+                fecha=input("Ingrese la fecha en formato DD-MM-AAAA: ")
 
                 try:
                     url = requests.get(f"https://indicadores.cl/api/v1/historico/uf/{fecha[6:10]}.json", timeout=10)
@@ -73,7 +73,7 @@ def menu_indicadores():
 
             elif opcion==3:
                 os.system("cls")
-                fecha=input("Ingrese la fecha en formato DD-MM-AA: ")
+                fecha=input("Ingrese la fecha en formato DD-MM-AAAA: ")
 
                 try:
                     url = requests.get(f"https://indicadores.cl/api/v1/euro/{fecha[6:10]}.json", timeout=10)
